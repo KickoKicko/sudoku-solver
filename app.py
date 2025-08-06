@@ -13,7 +13,10 @@ BG_COLOR = (255, 255, 255)
 NUM_COLOR = (50, 50, 50)
 BIG_FONT = pygame.font.SysFont("arial", 40)
 SMALL_FONT = pygame.font.SysFont("arial", 18)
-PUZZLE_1 = [0,0,0,2,6,0,7,0,1,6,8,0,0,7,0,0,9,0,1,9,0,0,0,4,5,0,0,8,2,0,1,0,0,0,4,0,0,0,4,6,0,2,9,0,0,0,5,0,0,0,3,0,2,8,0,0,9,3,0,0,0,7,4,0,4,0,0,5,0,0,3,6,7,0,3,0,1,8,0,0,0]
+PUZZLE_1 = [0,0,0,2,6,0,7,0,1,6,8,0,0,7,0,0,9,0,1,9,0,0,0,4,5,0,0,8,2,0,1,0,0,0,4,0,0,0,4,6,0,2,9,0,0,0,5,0,0,0,3,0,2,8,0,0,9,3,0,0,0,7,4,0,4,0,0,5,0,0,3,6,7,0,3,0,1,8,0,0,0]#EASY
+PUZZLE_2 = [8,0,1,2,9,6,0,0,0,3,0,0,0,8,1,7,0,6,2,0,0,0,0,0,0,9,0,1,0,2,0,6,5,4,7,9,0,0,0,1,0,9,0,3,0,5,9,0,3,0,0,0,6,2,4,0,0,0,0,0,0,1,3,9,1,0,0,0,0,6,8,7,0,8,0,0,0,7,0,5,0]#EASY
+PUZZLE_3 = [0,0,0,8,1,0,0,0,2,3,1,2,4,6,0,7,8,0,7,0,4,9,3,0,6,5,1,1,9,0,0,0,4,0,6,0,0,0,0,0,7,0,0,0,5,8,0,7,0,2,6,0,0,0,0,0,9,0,0,1,0,0,0,0,0,0,0,4,0,9,7,0,2,7,0,0,0,0,5,0,4]#MEDIUM
+PUZZLE_4 = [2,0,0,0,0,0,3,0,0,0,7,4,6,8,0,0,0,0,0,0,0,2,0,7,0,0,8,0,0,0,0,6,0,0,0,7,0,2,3,0,0,9,8,0,0,7,0,1,0,0,0,9,0,4,8,0,7,9,3,6,0,2,5,0,0,0,0,4,0,0,1,3,4,3,5,7,0,1,0,8,9]#MEDIUM
 
 
 # Set up the window
@@ -90,6 +93,15 @@ class Board:
         row=[self.grid[0][number],self.grid[1][number],self.grid[2][number],self.grid[3][number],self.grid[4][number],self.grid[5][number],self.grid[6][number],self.grid[7][number],self.grid[8][number]]
         return row
     
+    def box(self, number):
+        box=[]
+        a = number//3
+        b = number%3
+        for i in range(a*3,3+(a*3)):
+            for j in range(b*3,3+(b*3)):
+                box.append(self.grid[i][j])
+        return box
+    
     def setup(self, list):
         for i in range(9):
             for j in range(9):
@@ -111,10 +123,34 @@ def solve(board):
             onePotential(board.grid[i][j])
     for i in range(9):
         for j in range(9):
-            remove_from_row(board.row(i),board.grid[i][j])
+            remove_from_group(board.row(i),board.grid[i][j])
     for i in range(9):
         for j in range(9):
-            remove_from_column(board.column(j),board.grid[i][j])
+            remove_from_group(board.column(j),board.grid[i][j])
+    for y in range(9):
+        for x in range(9):
+            if(x<=2 and y<=2):
+                remove_from_group(board.box(0),board.grid[y][x])
+            if(x>=3 and x<=5 and y<=2):
+                remove_from_group(board.box(1),board.grid[y][x])
+            if(x>=6 and y<=2):
+                remove_from_group(board.box(2),board.grid[y][x])
+            if(x<=2 and y>=3 and y<=5):
+                remove_from_group(board.box(3),board.grid[y][x])
+            if(x>=3 and x<=5 and y>=3 and y<=5):
+                remove_from_group(board.box(4),board.grid[y][x])
+            if(x>=6 and y>=3 and y<=5):
+                remove_from_group(board.box(5),board.grid[y][x])
+            if(x<=2 and y>=6 and y<=8):
+                remove_from_group(board.box(6),board.grid[y][x])
+            if(x>=3 and x<=5 and y>=6 and y<=8):
+                remove_from_group(board.box(7),board.grid[y][x])
+            if(x>=6 and y>=6 and y<=8):
+                remove_from_group(board.box(8),board.grid[y][x])
+    for i in range(9):
+        only_potential_in_group(board.box(i))
+        only_potential_in_group(board.row(i))
+        only_potential_in_group(board.column(i))
 
 
 def onePotential(cell):
@@ -122,36 +158,39 @@ def onePotential(cell):
         for i in range(9):
             if(cell.potential_values[i]):
                 cell.value = i+1
-                #cell.potential_values=[False,False,False,False,False,False,False,False,False]
-                #print("yippie")
+                cell.potential_values[i] = False
 
-def remove_from_row(row,cell):
-    for c in row:
-        if c is not cell:
-            if c.value != 0:
-                cell.potential_values[c.value-1] = False
-def remove_from_column(col,cell):
-    for c in col:
+def remove_from_group(group,cell):
+    for c in group:
         if c is not cell:
             if c.value != 0:
                 cell.potential_values[c.value-1] = False
 
+def only_potential_in_group(group):
+    for i in range(9):
+        list=[]
+        for c in group:
+            if(c.potential_values[i]):
+                list.append(c)
+        if(len(list)==1):
+            list[0].value = i+1
 
 
-# Create 9x9 grid of Cell objects
+
+
 board = Board()
-#print(board.grid[0][0].value)
-board.setup(PUZZLE_1)
-#print(board.grid[0][0].value)
 chosen_cell=board.grid[0][0]
 
 for i in range(9):
     for j in range(9):
         board.grid[i][j].value = 0
 
-board.setup(PUZZLE_1)
+board.setup(PUZZLE_4)
 
-#board.grid[2][4].potential_values=[False,False,False,True,False,False,False,False,False]
+for i in range(9):
+    for j in range(9):
+        if(board.grid[i][j].value != 0):
+            board.grid[i][j].potential_values = [False,False,False,False,False,False,False,False,False]
 
 # Main loop
 while True:
@@ -166,28 +205,36 @@ while True:
             chosen_cell.selected = False
             chosen_cell = board.grid[y_value][x_value]
             chosen_cell.selected = True
-            #print(chosen_cell.value)
-            #print(chosen_cell.potential_values)
+            print(chosen_cell.potential_values)
 
         if event.type == pygame.KEYDOWN:
             if(event.key == pygame.K_1):
                 chosen_cell.value = 1
+                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
             if(event.key == pygame.K_2):
                 chosen_cell.value = 2
+                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
             if(event.key == pygame.K_3):
                 chosen_cell.value = 3
+                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
             if(event.key == pygame.K_4):
                 chosen_cell.value = 4
+                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
             if(event.key == pygame.K_5):
                 chosen_cell.value = 5
+                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
             if(event.key == pygame.K_6):
                 chosen_cell.value = 6
+                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
             if(event.key == pygame.K_7):
                 chosen_cell.value = 7
+                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
             if(event.key == pygame.K_8):
                 chosen_cell.value = 8
+                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
             if(event.key == pygame.K_9):
                 chosen_cell.value = 9
+                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
             if(event.key==pygame.K_SPACE):
                 solve(board)
 
