@@ -17,6 +17,16 @@ PUZZLE_1 = [0,0,0,2,6,0,7,0,1,6,8,0,0,7,0,0,9,0,1,9,0,0,0,4,5,0,0,8,2,0,1,0,0,0,
 PUZZLE_2 = [8,0,1,2,9,6,0,0,0,3,0,0,0,8,1,7,0,6,2,0,0,0,0,0,0,9,0,1,0,2,0,6,5,4,7,9,0,0,0,1,0,9,0,3,0,5,9,0,3,0,0,0,6,2,4,0,0,0,0,0,0,1,3,9,1,0,0,0,0,6,8,7,0,8,0,0,0,7,0,5,0]#EASY
 PUZZLE_3 = [0,0,0,8,1,0,0,0,2,3,1,2,4,6,0,7,8,0,7,0,4,9,3,0,6,5,1,1,9,0,0,0,4,0,6,0,0,0,0,0,7,0,0,0,5,8,0,7,0,2,6,0,0,0,0,0,9,0,0,1,0,0,0,0,0,0,0,4,0,9,7,0,2,7,0,0,0,0,5,0,4]#MEDIUM
 PUZZLE_4 = [2,0,0,0,0,0,3,0,0,0,7,4,6,8,0,0,0,0,0,0,0,2,0,7,0,0,8,0,0,0,0,6,0,0,0,7,0,2,3,0,0,9,8,0,0,7,0,1,0,0,0,9,0,4,8,0,7,9,3,6,0,2,5,0,0,0,0,4,0,0,1,3,4,3,5,7,0,1,0,8,9]#MEDIUM
+PUZZLE_5 = [5,0,9,0,0,0,0,8,0,0,0,0,0,0,0,0,0,4,6,7,0,9,0,0,0,0,3,1,5,0,0,3,0,0,4,9,0,9,0,7,4,0,0,0,0,0,0,0,0,0,0,3,0,0,4,0,5,3,7,0,2,0,0,7,6,0,0,0,9,0,1,8,0,0,8,5,0,1,0,0,0]#HARD
+PUZZLE_6 = [0,0,3,9,0,6,7,0,1,1,6,0,5,0,0,0,0,0,0,5,0,1,0,0,0,9,0,0,4,0,3,0,1,0,0,6,2,0,0,0,0,9,0,3,0,0,0,0,0,0,7,0,0,5,0,8,7,0,0,0,0,0,4,0,0,2,0,0,0,3,6,0,5,0,6,0,0,0,8,0,9]#HARD
+PUZZLE_7 = [7,5,0,2,0,0,0,0,0,0,1,0,0,9,6,0,0,4,4,0,0,0,5,0,0,0,3,0,0,0,0,3,0,0,0,5,0,0,7,0,4,0,0,3,0,5,0,1,0,0,2,9,0,0,9,0,0,0,0,0,3,8,7,0,0,0,0,6,0,0,0,0,0,0,4,0,0,8,5,1,0]#EXPERT
+PUZZLE_8 = [6,1,3,0,4,0,0,0,0,0,5,0,8,0,1,0,0,0,9,0,0,0,7,0,5,0,0,0,2,0,0,0,3,0,0,0,5,6,1,0,2,0,0,0,4,3,0,8,0,0,0,0,0,0,8,3,2,0,5,0,4,9,0,0,4,5,3,0,0,0,1,0,0,0,0,0,0,4,0,0,0]#EXPERT
+PUZZLE_9 = [4,0,3,0,0,0,8,0,0,0,0,0,0,9,0,7,0,0,0,0,6,8,0,7,0,0,0,5,0,0,0,7,0,9,0,0,0,0,2,9,0,1,0,0,0,0,0,0,0,0,8,0,5,0,0,0,0,1,2,0,4,7,9,0,3,4,0,0,0,1,0,2,2,0,0,0,0,6,0,0,8]#MASTER
+
+
+
+
+
 
 
 # Set up the window
@@ -151,6 +161,9 @@ def solve(board):
         only_potential_in_group(board.box(i))
         only_potential_in_group(board.row(i))
         only_potential_in_group(board.column(i))
+        only_pair_in_group(board.box(i))
+        only_pair_in_group(board.row(i))
+        only_pair_in_group(board.column(i))
 
 
 def onePotential(cell):
@@ -175,6 +188,29 @@ def only_potential_in_group(group):
         if(len(list)==1):
             list[0].value = i+1
 
+def only_pair_in_group(group):# When only two cells in a group have a pair of two values like(2,6) then remove those potentials from the rest of the cells
+    for c in group:
+        if(c.potential_numbers_count()==2):
+            list = []
+            for c2 in group:
+                if compare_list(c.potential_values, c2.potential_values):
+                    list.append(c2)
+            if len(list)==2:
+                for c3 in group:
+                    if c3 is not list[0] and c3 is not list[1]:
+                        for i in range(9):
+                            if(list[0].potential_values[i]):
+                                c3.potential_values[i] = False
+
+def compare_list(l1,l2):
+    if len(l1) != len(l2):
+        return False
+    for i in range(len(l1)):
+        if(l1[i]!=l2[i]):
+            return False
+    return True
+
+
 
 
 
@@ -185,7 +221,7 @@ for i in range(9):
     for j in range(9):
         board.grid[i][j].value = 0
 
-board.setup(PUZZLE_4)
+board.setup(PUZZLE_7)
 
 for i in range(9):
     for j in range(9):
