@@ -91,6 +91,12 @@ class Cell:
                 count+=1
         return count
     
+    def set_value(self, value):
+        self.value = value
+        for i in range(9):
+            self.potential_values[i]=False
+
+    
 class Board:
     def __init__(self):
         self.grid = [[Cell(row, col, self) for col in range(COLS)] for row in range(ROWS)] 
@@ -130,9 +136,6 @@ def draw_grid():
 def solve(board):
     for i in range(9):
         for j in range(9):
-            onePotential(board.grid[i][j])
-    for i in range(9):
-        for j in range(9):
             remove_from_group(board.row(i),board.grid[i][j])
     for i in range(9):
         for j in range(9):
@@ -151,27 +154,45 @@ def solve(board):
                 remove_from_group(board.box(4),board.grid[y][x])
             if(x>=6 and y>=3 and y<=5):
                 remove_from_group(board.box(5),board.grid[y][x])
-            if(x<=2 and y>=6 and y<=8):
+            if(x<=2 and y>=6):
                 remove_from_group(board.box(6),board.grid[y][x])
             if(x>=3 and x<=5 and y>=6 and y<=8):
                 remove_from_group(board.box(7),board.grid[y][x])
-            if(x>=6 and y>=6 and y<=8):
+            if(x>=6 and y>=6):
                 remove_from_group(board.box(8),board.grid[y][x])
     for i in range(9):
-        only_potential_in_group(board.box(i))
-        only_potential_in_group(board.row(i))
-        only_potential_in_group(board.column(i))
-        only_pair_in_group(board.box(i))
-        only_pair_in_group(board.row(i))
-        only_pair_in_group(board.column(i))
+        for j in range(9):
+            if(onePotential(board.grid[i][j])):
+                return
+    for i in range(9):
+        if(only_potential_in_group(board.box(i))):
+            return
+        if(only_potential_in_group(board.row(i))):
+            return
+        if(only_potential_in_group(board.column(i))):
+            return
+        if(only_pair_in_group(board.box(i))):
+            return
+        if(only_pair_in_group(board.row(i))):
+            return
+        if(only_pair_in_group(board.column(i))):
+            return
+        if(only_cells_cointaining_pair(board.column(i))):
+            return
+        if(only_cells_cointaining_pair(board.row(i))):
+            return
+        if(only_cells_cointaining_pair(board.box(i))):
+            return
+    print("end")
 
 
 def onePotential(cell):
     if cell.potential_numbers_count() == 1:
         for i in range(9):
             if(cell.potential_values[i]):
-                cell.value = i+1
-                cell.potential_values[i] = False
+                cell.set_value(i+1)
+                return True
+    return False
 
 def remove_from_group(group,cell):
     for c in group:
@@ -186,9 +207,11 @@ def only_potential_in_group(group):
             if(c.potential_values[i]):
                 list.append(c)
         if(len(list)==1):
-            list[0].value = i+1
+            list[0].set_value(i+1)
+            return True
+    return False
 
-def only_pair_in_group(group):# When only two cells in a group have a pair of two values like(2,6) then remove those potentials from the rest of the cells
+def only_pair_in_group(group):# When two cells in a group have a pair of two values like(2,6) then remove those potentials from the rest of the cells
     for c in group:
         if(c.potential_numbers_count()==2):
             list = []
@@ -199,8 +222,34 @@ def only_pair_in_group(group):# When only two cells in a group have a pair of tw
                 for c3 in group:
                     if c3 is not list[0] and c3 is not list[1]:
                         for i in range(9):
-                            if(list[0].potential_values[i]):
+                            if(list[0].potential_values[i] and c3.potential_values[i]):
                                 c3.potential_values[i] = False
+                                return True
+    return False
+
+def only_cells_cointaining_pair(group):
+    for i in range(9):
+        for j in range(9):
+            if i == j:
+                continue
+            list = []
+            for c in group:
+                if c.potential_values[i] or c.potential_values[j]:
+                    list.append(c)
+            if(len(list)==2):
+                if list[0].potential_values[i] and list[0].potential_values[j] and list[1].potential_values[i] and list[1].potential_values[j]:
+                    if(list[0].potential_numbers_count() != 2 or list[1].potential_numbers_count() != 2):
+                        for x in range(9):
+                            list[0].potential_values[x] = False
+                            list[1].potential_values[x] = False
+                        list[0].potential_values[i] = True
+                        list[0].potential_values[j] = True
+                        list[1].potential_values[i] = True
+                        list[1].potential_values[j] = True
+                        return True
+                
+    return False
+
 
 def compare_list(l1,l2):
     if len(l1) != len(l2):
@@ -221,7 +270,7 @@ for i in range(9):
     for j in range(9):
         board.grid[i][j].value = 0
 
-board.setup(PUZZLE_7)
+board.setup(PUZZLE_8)
 
 for i in range(9):
     for j in range(9):
