@@ -6,10 +6,8 @@ pygame.init()
 
 # Constants
 WIDTH, HEIGHT = 540, 540
-ROWS, COLS = 9, 9
-CELL_SIZE = WIDTH // COLS
+CELL_SIZE = WIDTH // 9
 LINE_COLOR = (0, 0, 0)
-BG_COLOR = (255, 255, 255)
 NUM_COLOR = (50, 50, 50)
 BIG_FONT = pygame.font.SysFont("arial", 40)
 SMALL_FONT = pygame.font.SysFont("arial", 18)
@@ -22,11 +20,8 @@ PUZZLE_6 = [0,0,3,9,0,6,7,0,1,1,6,0,5,0,0,0,0,0,0,5,0,1,0,0,0,9,0,0,4,0,3,0,1,0,
 PUZZLE_7 = [7,5,0,2,0,0,0,0,0,0,1,0,0,9,6,0,0,4,4,0,0,0,5,0,0,0,3,0,0,0,0,3,0,0,0,5,0,0,7,0,4,0,0,3,0,5,0,1,0,0,2,9,0,0,9,0,0,0,0,0,3,8,7,0,0,0,0,6,0,0,0,0,0,0,4,0,0,8,5,1,0]#EXPERT
 PUZZLE_8 = [6,1,3,0,4,0,0,0,0,0,5,0,8,0,1,0,0,0,9,0,0,0,7,0,5,0,0,0,2,0,0,0,3,0,0,0,5,6,1,0,2,0,0,0,4,3,0,8,0,0,0,0,0,0,8,3,2,0,5,0,4,9,0,0,4,5,3,0,0,0,1,0,0,0,0,0,0,4,0,0,0]#EXPERT
 PUZZLE_9 = [4,0,3,0,0,0,8,0,0,0,0,0,0,9,0,7,0,0,0,0,6,8,0,7,0,0,0,5,0,0,0,7,0,9,0,0,0,0,2,9,0,1,0,0,0,0,0,0,0,0,8,0,5,0,0,0,0,1,2,0,4,7,9,0,3,4,0,0,0,1,0,2,2,0,0,0,0,6,0,0,8]#MASTER
-
-
-
-
-
+PUZZLE_10 = [0,0,3,6,0,0,0,0,7,0,0,0,0,0,0,0,1,5,0,5,0,0,7,0,6,8,0,0,0,9,8,0,0,0,0,0,1,0,2,0,0,7,0,0,8,0,0,0,1,0,2,0,0,0,0,4,0,0,0,0,0,0,0,7,0,0,0,0,0,3,0,9,8,0,1,0,0,4,2,0,0]#MASTER
+PUZZLE_11 = [3,0,0,0,0,2,0,0,0,2,0,8,0,0,7,0,0,0,0,0,0,5,1,4,0,0,0,0,0,0,1,0,0,0,7,0,6,9,0,0,0,0,0,8,0,0,0,0,0,9,0,0,0,2,0,2,0,0,0,0,4,0,5,0,0,5,0,0,0,0,0,0,0,0,4,0,7,0,1,0,0]#EXTREME
 
 
 # Set up the window
@@ -99,7 +94,7 @@ class Cell:
     
 class Board:
     def __init__(self):
-        self.grid = [[Cell(row, col, self) for col in range(COLS)] for row in range(ROWS)] 
+        self.grid = [[Cell(row, col, self) for col in range(9)] for row in range(9)] 
 
     def row(self, number):
         row=[self.grid[number][0],self.grid[number][1],self.grid[number][2],self.grid[number][3],self.grid[number][4],self.grid[number][5],self.grid[number][6],self.grid[number][7],self.grid[number][8]]
@@ -125,10 +120,10 @@ class Board:
 
 
 def draw_grid():
-    screen.fill(BG_COLOR)
+    screen.fill((255, 255, 255))
 
     # Draw thin and thick lines
-    for i in range(ROWS + 1):
+    for i in range(9 + 1):
         thickness = 4 if i % 3 == 0 else 1
         pygame.draw.line(screen, LINE_COLOR, (0, i * CELL_SIZE), (WIDTH, i * CELL_SIZE), thickness)
         pygame.draw.line(screen, LINE_COLOR, (i * CELL_SIZE, 0), (i * CELL_SIZE, HEIGHT), thickness)
@@ -137,8 +132,6 @@ def solve(board):
     for i in range(9):
         for j in range(9):
             remove_from_group(board.row(i),board.grid[i][j])
-    for i in range(9):
-        for j in range(9):
             remove_from_group(board.column(j),board.grid[i][j])
     for y in range(9):
         for x in range(9):
@@ -183,7 +176,8 @@ def solve(board):
             return
         if(only_cells_cointaining_pair(board.box(i))):
             return
-    print("end")
+    print("finished")
+    return True
 
 
 def onePotential(cell):
@@ -260,22 +254,20 @@ def compare_list(l1,l2):
     return True
 
 
-
-
-
 board = Board()
 chosen_cell=board.grid[0][0]
-
 for i in range(9):
     for j in range(9):
         board.grid[i][j].value = 0
 
-board.setup(PUZZLE_8)
+# -------------------------------------------------------  Here you can choose to try a imported puzzle 
+board.setup(PUZZLE_11)
+
 
 for i in range(9):
     for j in range(9):
         if(board.grid[i][j].value != 0):
-            board.grid[i][j].potential_values = [False,False,False,False,False,False,False,False,False]
+            board.grid[i][j].potential_values = [False for i in range(9)]
 
 # Main loop
 while True:
@@ -295,33 +287,34 @@ while True:
         if event.type == pygame.KEYDOWN:
             if(event.key == pygame.K_1):
                 chosen_cell.value = 1
-                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
+                chosen_cell.potential_values = [False for i in range(9)]
             if(event.key == pygame.K_2):
                 chosen_cell.value = 2
-                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
+                chosen_cell.potential_values = [False for i in range(9)]
             if(event.key == pygame.K_3):
                 chosen_cell.value = 3
-                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
+                chosen_cell.potential_values = [False for i in range(9)]
             if(event.key == pygame.K_4):
                 chosen_cell.value = 4
-                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
+                chosen_cell.potential_values = [False for i in range(9)]
             if(event.key == pygame.K_5):
                 chosen_cell.value = 5
-                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
+                chosen_cell.potential_values = [False for i in range(9)]
             if(event.key == pygame.K_6):
                 chosen_cell.value = 6
-                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
+                chosen_cell.potential_values = [False for i in range(9)]
             if(event.key == pygame.K_7):
                 chosen_cell.value = 7
-                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
+                chosen_cell.potential_values = [False for i in range(9)]
             if(event.key == pygame.K_8):
                 chosen_cell.value = 8
-                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
+                chosen_cell.potential_values = [False for i in range(9)]
             if(event.key == pygame.K_9):
                 chosen_cell.value = 9
-                chosen_cell.potential_values = [False,False,False,False,False,False,False,False,False]
+                chosen_cell.potential_values = [False for i in range(9)]
             if(event.key==pygame.K_SPACE):
-                solve(board)
+                if solve(board):
+                    break
 
                 
             
